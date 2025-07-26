@@ -1,8 +1,6 @@
 export async function onRequestPost(context) {
     try {
         const { request, env } = context;
-        
-        // Parse the request body
         const { message } = await request.json();
         
         if (!message) {
@@ -12,25 +10,63 @@ export async function onRequestPost(context) {
             });
         }
         
-        // Create the AI prompt with restoration context
-        const systemPrompt = `You are Restor-AI, a helpful assistant specializing in home restoration, repairs, and damage assessment. You help people with:
+        // Get knowledge base from KV storage
+        let knowledgeBase = "";
+        try {
+            const kbData = await env.KNOWLEDGE_BASE.get("restoration_knowledge", "json");
+            if (kbData) {
+                // Format knowledge base for AI
+                knowledgeBase = Object.entries(kbData).map(([category, data]) => {
+                    return `${category.toUpperCase().replace(/-/g, ' ')}:\n${data.content}\n`;
+                }).join('\n');
+            }
+        } catch (error) {
+            console.error('Failed to load knowledge base:', error);
+            // Fallback to basic knowledge if KV fails
+            knowledgeBase = `
+EMERGENCY FIRST STEPS:
+- Water damage: Turn off source, document with photos, start drying within 24 hours
+- Fire damage: Ensure safety, secure property, document everything
+- Mold: Ventilate area, don't disturb large areas (>10 sq ft), call professionals
+- Storm damage: Make temporary repairs to prevent further damage
+
+COST ESTIMATES:
+- Water damage: $1,000-$7,000 depending on severity
+- Mold remediation: $500-$6,000 depending on scope
+- Fire damage: $3,000-$15,000+ depending on extent
+- Storm damage: $2,000-$10,000 depending on damage
+
+INSURANCE TIPS:
+- Document everything with photos/video
+- Keep all receipts for emergency repairs
+- Most policies cover sudden, accidental damage
+- Flood damage requires separate flood insurance
+            `;
+        }
         
-        - Water damage restoration
-        - Fire damage repair
-        - Mold remediation
-        - Home repairs and maintenance
-        - Insurance claim guidance
-        - Emergency restoration procedures
-        - Property damage assessment
-        
-        Provide helpful, practical advice while being friendly and professional. If asked about something outside restoration/repair topics, politely redirect to your specialty area.`;
+        const systemPrompt = `You are Restor-AI, a professional restoration assistant specializing in helping customers with property damage and restoration needs.
+
+KNOWLEDGE BASE:
+${knowledgeBase}
+
+GUIDELINES:
+- Always prioritize safety first
+- Provide specific, actionable advice
+- Include realistic cost estimates when relevant
+- Recommend professional help for complex/dangerous situations
+- Suggest documenting everything for insurance claims
+- Be empathetic - restoration situations are stressful
+- If asked about something outside restoration, politely redirect
+- Provide emergency steps for urgent situations
+- Keep responses helpful but concise
+
+Answer the customer's question using the knowledge base above. Be helpful, professional, and thorough.`;
         
         const messages = [
             { role: "system", content: systemPrompt },
             { role: "user", content: message }
         ];
         
-        // Call Cloudflare Workers AI
         const response = await env.AI.run('@cf/meta/llama-2-7b-chat-int8', {
             messages: messages,
             max_tokens: 512,
@@ -64,11 +100,16 @@ export async function onRequestPost(context) {
     }
 }
 
-// Handle CORS preflight requests
 export async function onRequestOptions() {
     return new Response(null, {
         status: 200,
         headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type'
+        }
+    });
+}
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'POST, OPTIONS',
             'Access-Control-Allow-Headers': 'Content-Type'
