@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restor-Ai-tion - AI-Powered Restoration Chat</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>🔧 Restor-Ai-tion</h1>
+            <p>Your AI-powered restoration assistant</p>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <div class="message ai-message">
+                <div class="message-content">
+                    <strong>Restor-AI:</strong> Hello! I'm your restoration assistant. I can help you with questions about home repairs, restoration projects, damage assessment, and more. How can I help you today?
+                </div>
+                <div class="message-time" id="welcomeTime"></div>
+            </div>
+        </div>
+        
+        <div class="chat-input-container">
+            <div class="input-wrapper">
+                <textarea id="messageInput" placeholder="Ask me about restoration, repairs, damage assessment..." rows="1"></textarea>
+                <button id="sendButton" onclick="sendMessage()">
+                    <span id="sendIcon">➤</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "restor-ai-tion",
+  "version": "1.0.0",
+  "description": "AI-powered restoration chat assistant",
+  "main": "index.html",
+  "scripts": {
+    "dev": "wrangler pages dev .",
+    "deploy": "wrangler pages publish ."
+  },
+  "keywords": ["ai", "chat", "restoration", "cloudflare", "workers-ai"],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}
